@@ -3,7 +3,7 @@ package com.orangery.model;
 public class VisualParameters {
     private String stemColor;
     private String leafColor;
-    private int averageSize;
+    private double averageSize;
 
     public String getStemColor() {
         return stemColor;
@@ -21,7 +21,7 @@ public class VisualParameters {
         this.leafColor = leafColor;
     }
 
-    public int getAverageSize() {
+    public double getAverageSize() {
         return averageSize;
     }
 
