@@ -1,31 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-    <!-- Основний шаблон -->
-    <xsl:template match="/flowers">
+<xsl:stylesheet version="1.0"
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:output method="xml" indent="yes"/>
+
+    <xsl:key name="flowersBySoil" match="flower" use="soil"/>
+
+    <xsl:template match="/">
         <groupedFlowers>
-
-            <!-- ГРУПА 1 — підзолистий -->
-            <soil type="podzolic">
-                <xsl:for-each select="flower[soil='podzolic']">
-                    <xsl:copy-of select="."/>
-                </xsl:for-each>
-            </soil>
-
-            <!-- ГРУПА 2 — ґрунтовий -->
-            <soil type="ground">
-                <xsl:for-each select="flower[soil='ground']">
-                    <xsl:copy-of select="."/>
-                </xsl:for-each>
-            </soil>
-
-            <!-- ГРУПА 3 — дерново-підзолистий -->
-            <soil type="sod-podzolic">
-                <xsl:for-each select="flower[soil='sod-podzolic']">
-                    <xsl:copy-of select="."/>
-                </xsl:for-each>
-            </soil>
-
+            <!-- беремо унікальні значення soil -->
+            <xsl:for-each select="flowers/flower[generate-id() = generate-id(key('flowersBySoil', soil)[1])]">
+                <soilGroup type="{soil}">
+                    <!-- вставляємо всі flower з таким soil -->
+                    <xsl:for-each select="key('flowersBySoil', soil)">
+                        <xsl:copy-of select="."/>
+                    </xsl:for-each>
+                </soilGroup>
+            </xsl:for-each>
         </groupedFlowers>
     </xsl:template>
 
