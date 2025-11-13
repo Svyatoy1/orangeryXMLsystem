@@ -5,139 +5,114 @@ import com.orangery.parser.DomParser;
 import com.orangery.parser.SaxParser;
 import com.orangery.parser.StaxParser;
 import com.orangery.transform.XmlTransformer;
-import com.orangery.util.FlowerComparatorByName;
-import com.orangery.util.FlowerComparatorByOrigin;
-import com.orangery.util.FlowerComparatorBySize;
 import com.orangery.validator.XmlValidator;
+import com.orangery.util.*;
 
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
-    private static final String XML_PATH = "src/main/resources/flowers.xml";
-    private static final String XSD_PATH = "src/main/resources/flowers.xsd";
-    private static final String XSL_PATH = "src/main/resources/transform.xml";
+    private static List<Flower> flowers = new ArrayList<>();
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
-        List<Flower> flowers = null;
-
         while (true) {
-            System.out.println("\n==== ORANGERY XML SYSTEM ====");
+            System.out.println("==== ORANGERY XML SYSTEM ====");
             System.out.println("1 — Parse XML (choose parser)");
             System.out.println("2 — Sort flowers");
             System.out.println("3 — Validate XML");
             System.out.println("4 — Transform XML (XSLT)");
             System.out.println("5 — Show loaded flowers");
             System.out.println("0 — Exit");
-            System.out.print("Choose option: ");
+            System.out.print("> ");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            String choice = scanner.nextLine();
 
             switch (choice) {
 
-                case 1: {
-                    System.out.println("Choose parser:");
-                    System.out.println("1 — DOM");
-                    System.out.println("2 — SAX");
-                    System.out.println("3 — StAX");
-
-                    int p = scanner.nextInt();
-                    scanner.nextLine();
-
-                    switch (p) {
-                        case 1:
-                            flowers = new DomParser().parse(XML_PATH);
-                            System.out.println("Parsed using DOM.");
-                            break;
-                        case 2:
-                            flowers = new SaxParser().parse(XML_PATH);
-                            System.out.println("Parsed using SAX.");
-                            break;
-                        case 3:
-                            flowers = new StaxParser().parse(XML_PATH);
-                            System.out.println("Parsed using StAX.");
-                            break;
-                        default:
-                            System.out.println("Unknown parser.");
-                    }
-                    break;
-                }
-
-                case 2: {
-                    if (flowers == null) {
-                        System.out.println("No flowers loaded. Parse XML first.");
-                        break;
-                    }
-                    System.out.println("Sort by:");
-                    System.out.println("1 — Name");
-                    System.out.println("2 — Origin");
-                    System.out.println("3 — Size");
-
-                    int s = scanner.nextInt();
-                    scanner.nextLine();
-
-                    switch (s) {
-                        case 1:
-                            flowers.sort(new FlowerComparatorByName());
-                            System.out.println("Sorted by name.");
-                            break;
-                        case 2:
-                            flowers.sort(new FlowerComparatorByOrigin());
-                            System.out.println("Sorted by origin.");
-                            break;
-                        case 3:
-                            flowers.sort(new FlowerComparatorBySize());
-                            System.out.println("Sorted by size.");
-                            break;
-                        default:
-                            System.out.println("Unknown sorting option.");
-                    }
-                    break;
-                }
-
-                case 3: {
-                    XmlValidator validator = new XmlValidator();
-                    boolean isValid = validator.validate(XML_PATH, XSD_PATH);
-
-                    if (isValid)
-                        System.out.println("XML is VALID!");
-                    else
-                        System.out.println("XML is NOT valid!");
-
-                    break;
-                }
-
-                case 4: {
-                    System.out.print("Enter output file name (e.g. result.xml): ");
-                    String out = scanner.nextLine();
-
-                    XmlTransformer transformer = new XmlTransformer();
-                    transformer.transform(XML_PATH, XSL_PATH, out);
-
-                    System.out.println("Transformation completed → " + out);
-                    break;
-                }
-
-                case 5: {
-                    if (flowers == null) {
-                        System.out.println("No flowers loaded.");
-                        break;
-                    }
-                    flowers.forEach(System.out::println);
-                    break;
-                }
-
-                case 0:
+                case "1" -> parseMenu();
+                case "2" -> sortMenu();
+                case "3" -> validateXml();
+                case "4" -> transformXml();
+                case "5" -> showFlowers();
+                case "0" -> {
                     System.out.println("Exiting...");
                     return;
-
-                default:
-                    System.out.println("Unknown option.");
+                }
+                default -> System.out.println("Unknown option.");
             }
         }
+    }
+
+    private static void parseMenu() {
+        System.out.println("Choose parser:");
+        System.out.println("1 — DOM");
+        System.out.println("2 — SAX");
+        System.out.println("3 — StAX");
+        System.out.print("> ");
+
+        String c = scanner.nextLine();
+
+        switch (c) {
+            case "1" -> flowers = new DomParser().parse("flowers.xml");
+            case "2" -> flowers = new SaxParser().parse("flowers.xml");
+            case "3" -> flowers = new StaxParser().parse("flowers.xml");
+            default -> {
+                System.out.println("Unknown parser.");
+                return;
+            }
+        }
+        System.out.println("Loaded " + flowers.size() + " flowers.");
+    }
+
+    private static void sortMenu() {
+        if (flowers.isEmpty()) {
+            System.out.println("⚠ No flowers loaded.");
+            return;
+        }
+
+        System.out.println("Sort by:");
+        System.out.println("1 — Name");
+        System.out.println("2 — Origin");
+        System.out.println("3 — Size");
+
+        String c = scanner.nextLine();
+
+        switch (c) {
+            case "1" -> flowers.sort(new FlowerComparatorByName());
+            case "2" -> flowers.sort(new FlowerComparatorByOrigin());
+            case "3" -> flowers.sort(new FlowerComparatorBySize());
+            default -> {
+                System.out.println("Unknown option.");
+                return;
+            }
+        }
+
+        System.out.println("Sorting complete.");
+    }
+
+    private static void validateXml() {
+        XmlValidator validator = new XmlValidator();
+        boolean ok = validator.validate("flowers.xml", "flowers.xsd");
+
+        System.out.println(ok ? "XML is valid!" : "XML is INVALID!");
+    }
+
+    private static void transformXml() {
+        XmlTransformer transformer = new XmlTransformer();
+        transformer.transform("flowers.xml", "transform.xml", "output.html");
+
+        System.out.println("Transformation complete → output.html");
+    }
+
+    private static void showFlowers() {
+        if (flowers.isEmpty()) {
+            System.out.println("⚠ No flowers loaded.");
+            return;
+        }
+
+        System.out.println("=== Flowers ===");
+        flowers.forEach(System.out::println);
     }
 }
