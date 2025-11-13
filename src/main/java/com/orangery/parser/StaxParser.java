@@ -1,83 +1,71 @@
 package com.orangery.parser;
 
 import com.orangery.model.*;
+
 import javax.xml.stream.*;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStream;
+import java.util.*;
 
 public class StaxParser {
 
-    public List<Flower> parse(String filePath) {
-        List<Flower> flowers = new ArrayList<>();
+    public List<Flower> parse(String fileName) {
+        List<Flower> list = new ArrayList<>();
 
         try {
-            XMLStreamReader reader = XMLInputFactory.newInstance()
-                    .createXMLStreamReader(new FileInputStream(filePath));
+            InputStream is = Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream(fileName),
+                    "File not found in resources: " + fileName
+            );
+
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = factory.createXMLStreamReader(is);
 
             Flower flower = null;
             VisualParameters vp = null;
             GrowingTips tips = null;
 
-            String currentTag = "";
-            String text = "";
-
             while (reader.hasNext()) {
                 int type = reader.next();
 
-                switch (type) {
+                if (type == XMLStreamConstants.START_ELEMENT) {
+                    String tag = reader.getLocalName();
 
-                    case XMLStreamConstants.START_ELEMENT -> {
-                        currentTag = reader.getLocalName();
-                        text = "";
-
-                        switch (currentTag) {
-                            case "flower" -> {
-                                flower = new Flower();
-                                vp = new VisualParameters();
-                                tips = new GrowingTips();
-                            }
+                    switch (tag) {
+                        case "flower" -> {
+                            flower = new Flower();
+                            flower.setId(reader.getAttributeValue(null, "id"));
                         }
+                        case "visualParameters" -> vp = new VisualParameters();
+                        case "growingTips" -> tips = new GrowingTips();
+                        case "name" -> flower.setName(reader.getElementText());
+                        case "origin" -> flower.setOrigin(reader.getElementText());
+                        case "soil" -> flower.setSoil(Soil.fromString(reader.getElementText()));
+                        case "multiplying" -> flower.setMultiplying(Multiplying.fromString(reader.getElementText()));
+
+                        case "stemColor" -> vp.setStemColor(reader.getElementText());
+                        case "leafColor" -> vp.setLeafColor(reader.getElementText());
+                        case "averageSize" -> vp.setAverageSize(Integer.parseInt(reader.getElementText()));
+
+                        case "temperature" -> tips.setTemperature(Integer.parseInt(reader.getElementText()));
+                        case "light" -> tips.setLight(Boolean.parseBoolean(reader.getElementText()));
+                        case "watering" -> tips.setWatering(Integer.parseInt(reader.getElementText()));
                     }
 
-                    case XMLStreamConstants.CHARACTERS -> {
-                        text += reader.getText().trim();
-                    }
-
-                    case XMLStreamConstants.END_ELEMENT -> {
-
-                        switch (reader.getLocalName()) {
-
-                            case "name" -> flower.setName(text);
-                            case "origin" -> flower.setOrigin(text);
-
-                            case "soil" ->
-                                    flower.setSoil(Soil.valueOf(text.toUpperCase()));
-
-                            case "multiplying" ->
-                                    flower.setMultiplying(Multiplying.valueOf(text.toUpperCase()));
-
-                            case "stemColor" -> vp.setStemColor(text);
-                            case "leafColor" -> vp.setLeafColor(text);
-                            case "averageSize" -> vp.setAverageSize(Integer.parseInt(text));
-
-                            case "temperature" -> tips.setTemperature(Integer.parseInt(text));
-                            case "light" -> tips.setLight(Boolean.parseBoolean(text));
-                            case "watering" -> tips.setWatering(Integer.parseInt(text));
-
-                            case "visualParameters" -> flower.setVisualParameters(vp);
-                            case "growingTips" -> flower.setGrowingTips(tips);
-
-                            case "flower" -> flowers.add(flower);
-                        }
+                } else if (type == XMLStreamConstants.END_ELEMENT) {
+                    switch (reader.getLocalName()) {
+                        case "visualParameters" -> flower.setVisualParameters(vp);
+                        case "growingTips" -> flower.setGrowingTips(tips);
+                        case "flower" -> list.add(flower);
                     }
                 }
             }
+
+            System.out.println("Parsed using StAX.");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return flowers;
+        return list;
     }
 }

@@ -3,65 +3,65 @@ package com.orangery.parser;
 import com.orangery.model.*;
 import org.w3c.dom.*;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
+import javax.xml.parsers.DocumentBuilder;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DomParser {
 
-    public List<Flower> parse(String filePath) {
+    public List<Flower> parse(String fileName) {
         List<Flower> flowers = new ArrayList<>();
 
         try {
-            Document doc = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder()
-                    .parse(new File(filePath));
+            InputStream is = Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream(fileName),
+                    "File not found in resources: " + fileName
+            );
 
-            doc.getDocumentElement().normalize();
-            NodeList nodes = doc.getElementsByTagName("flower");
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document doc = builder.parse(is);
 
-            for (int i = 0; i < nodes.getLength(); i++) {
-                Node node = nodes.item(i);
-                Flower flower = new Flower();
+            NodeList nodeList = doc.getElementsByTagName("flower");
 
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element el = (Element) node;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Element e = (Element) nodeList.item(i);
 
-                    flower.setName(getText(el, "name"));
-                    flower.setOrigin(getText(el, "origin"));
-                    flower.setSoil(Soil.valueOf(getText(el, "soil").toUpperCase()));
-                    flower.setMultiplying(Multiplying.valueOf(getText(el, "multiplying").toUpperCase()));
+                Flower f = new Flower();
+                f.setId(e.getAttribute("id"));
+                f.setName(getText(e, "name"));
+                f.setOrigin(getText(e, "origin"));
+                f.setSoil(Soil.fromString(getText(e, "soil")));
+                f.setMultiplying(Multiplying.fromString(getText(e, "multiplying")));
 
-                    // Visual
-                    VisualParameters vp = new VisualParameters();
-                    Element visual = (Element) el.getElementsByTagName("visualParameters").item(0);
+                VisualParameters vp = new VisualParameters();
+                Element vpElem = (Element) e.getElementsByTagName("visualParameters").item(0);
+                vp.setStemColor(getText(vpElem, "stemColor"));
+                vp.setLeafColor(getText(vpElem, "leafColor"));
+                vp.setAverageSize(Integer.parseInt(getText(vpElem, "averageSize")));
+                f.setVisualParameters(vp);
 
-                    vp.setStemColor(getText(visual, "stemColor"));
-                    vp.setLeafColor(getText(visual, "leafColor"));
-                    vp.setAverageSize(Integer.parseInt(getText(visual, "averageSize")));
-                    flower.setVisualParameters(vp);
+                GrowingTips tips = new GrowingTips();
+                Element tipsElem = (Element) e.getElementsByTagName("growingTips").item(0);
+                tips.setTemperature(Integer.parseInt(getText(tipsElem, "temperature")));
+                tips.setLight(Boolean.parseBoolean(getText(tipsElem, "light")));
+                tips.setWatering(Integer.parseInt(getText(tipsElem, "watering")));
+                f.setGrowingTips(tips);
 
-                    // Growing tips
-                    GrowingTips tips = new GrowingTips();
-                    Element grow = (Element) el.getElementsByTagName("growingTips").item(0);
-
-                    tips.setTemperature(Integer.parseInt(getText(grow, "temperature")));
-                    tips.setLight(Boolean.parseBoolean(getText(grow, "light")));
-                    tips.setWatering(Integer.parseInt(getText(grow, "watering")));
-                    flower.setGrowingTips(tips);
-
-                    flowers.add(flower);
-                }
+                flowers.add(f);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Parsed using DOM.");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return flowers;
     }
 
     private String getText(Element parent, String tag) {
-        return parent.getElementsByTagName(tag).item(0).getTextContent().trim();
+        return parent.getElementsByTagName(tag).item(0).getTextContent();
     }
 }
