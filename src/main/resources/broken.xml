@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flowers>
+    <flower id="f1">
+        <name>Rose</name>
+        <soil>INVALID_SOIL</soil> <!-- ERROR -->
+        <origin>Holland</origin>
+
+        <visualParameters>
+            <stemColor>green</stemColor>
+            <!-- Missing leafColor → ERROR -->
+            <averageSize>45</averageSize>
+        </visualParameters>
+
+        <growingTips>
+            <temperature>bad_number</temperature> <!-- ERROR -->
+            <light>yes</light> <!-- ERROR: not boolean -->
+            <watering>250</watering>
+        </growingTips>
+
+        <multiplying>rocks</multiplying> <!-- ERROR -->
+    </flower>
+</flowers>

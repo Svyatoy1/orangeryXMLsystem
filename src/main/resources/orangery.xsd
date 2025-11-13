@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified">
+
+    <xsd:simpleType name="soilType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="podzolic"/>
+            <xsd:enumeration value="ground"/>
+            <xsd:enumeration value="sod-podzolic"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="multiplyingType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="leaf"/>
+            <xsd:enumeration value="cuttings"/>
+            <xsd:enumeration value="seeds"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="flowers">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="flower" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:sequence>
+
+                            <xsd:element name="name" type="xsd:string"/>
+                            <xsd:element name="soil" type="soilType"/>
+                            <xsd:element name="origin" type="xsd:string"/>
+
+                            <xsd:element name="visualParameters">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="stemColor" type="xsd:string"/>
+                                        <xsd:element name="leafColor" type="xsd:string"/>
+                                        <xsd:element name="averageSize" type="xsd:int"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+
+                            <xsd:element name="growingTips">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="temperature" type="xsd:int"/>
+                                        <xsd:element name="light" type="xsd:boolean"/>
+                                        <xsd:element name="watering" type="xsd:int"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+
+                            <xsd:element name="multiplying" type="multiplyingType"/>
+
+                        </xsd:sequence>
+
+                        <xsd:attribute name="id" type="xsd:ID" use="required"/>
+
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

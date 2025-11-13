@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+    <!-- Основний шаблон -->
+    <xsl:template match="/flowers">
+        <groupedFlowers>
+
+            <!-- ГРУПА 1 — підзолистий -->
+            <soil type="podzolic">
+                <xsl:for-each select="flower[soil='podzolic']">
+                    <xsl:copy-of select="."/>
+                </xsl:for-each>
+            </soil>
+
+            <!-- ГРУПА 2 — ґрунтовий -->
+            <soil type="ground">
+                <xsl:for-each select="flower[soil='ground']">
+                    <xsl:copy-of select="."/>
+                </xsl:for-each>
+            </soil>
+
+            <!-- ГРУПА 3 — дерново-підзолистий -->
+            <soil type="sod-podzolic">
+                <xsl:for-each select="flower[soil='sod-podzolic']">
+                    <xsl:copy-of select="."/>
+                </xsl:for-each>
+            </soil>
+
+        </groupedFlowers>
+    </xsl:template>
+
+</xsl:stylesheet>

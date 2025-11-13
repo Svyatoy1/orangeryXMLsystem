@@ -2,8 +2,8 @@
 <flowers>
     <flower id="f1">
         <name>Rose</name>
-        <soil>ground</soil>
-        <origin>Netherlands</origin>
+        <soil>podzolic</soil>
+        <origin>Holland</origin>
 
         <visualParameters>
             <stemColor>green</stemColor>
@@ -12,29 +12,29 @@
         </visualParameters>
 
         <growingTips>
-            <temperature>18</temperature>
-            <light>light-loving</light>
-            <watering>300</watering>
+            <temperature>20</temperature>
+            <light>true</light>
+            <watering>250</watering>
         </growingTips>
 
         <multiplying>cuttings</multiplying>
     </flower>
 
     <flower id="f2">
-        <name>Orchid</name>
-        <soil>sod-podzolic</soil>
-        <origin>Thailand</origin>
+        <name>Lily</name>
+        <soil>ground</soil>
+        <origin>Ukraine</origin>
 
         <visualParameters>
-            <stemColor>light-green</stemColor>
+            <stemColor>white</stemColor>
             <leafColor>green</leafColor>
-            <averageSize>25</averageSize>
+            <averageSize>33</averageSize>
         </visualParameters>
 
         <growingTips>
-            <temperature>22</temperature>
-            <light>shade-loving</light>
-            <watering>150</watering>
+            <temperature>18</temperature>
+            <light>false</light>
+            <watering>180</watering>
         </growingTips>
 
         <multiplying>seeds</multiplying>

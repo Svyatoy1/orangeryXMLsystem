@@ -9,7 +9,7 @@ import java.io.File;
 
 public class XmlValidator {
 
-    public static boolean validate(String xmlPath, String xsdPath) {
+    public boolean validate(String xmlPath, String xsdPath) {
         try {
             SchemaFactory factory =
                     SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -21,7 +21,7 @@ public class XmlValidator {
             return true;
 
         } catch (Exception e) {
-            System.err.println("Validation error: " + e.getMessage());
+            System.out.println("Validation error: " + e.getMessage());
             return false;
         }
     }

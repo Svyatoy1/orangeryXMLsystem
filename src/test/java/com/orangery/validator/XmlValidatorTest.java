@@ -1,27 +1,24 @@
 package com.orangery.validator;
 
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class XmlValidatorTest {
 
+    private static final String XSD = "src/main/resources/orangery.xsd";
+    private static final String VALID_XML = "src/main/resources/flowers.xml";
+    private static final String INVALID_XML = "src/main/resources/broken_flowers.xml";
+
     @Test
     void testValidXml() {
-        boolean result = XmlValidator.validate(
-                "src/main/resources/flowers.xml",
-                "src/main/resources/flowers.xsd"
-        );
-
-        assertTrue(result);
+        XmlValidator validator = new XmlValidator();
+        assertTrue(validator.validate(VALID_XML, XSD));
     }
 
     @Test
     void testInvalidXml() {
-        boolean result = XmlValidator.validate(
-                "src/test/resources/broken.xml",
-                "src/main/resources/flowers.xsd"
-        );
-
-        assertFalse(result);
+        XmlValidator validator = new XmlValidator();
+        assertFalse(validator.validate(INVALID_XML, XSD));
     }
 }
