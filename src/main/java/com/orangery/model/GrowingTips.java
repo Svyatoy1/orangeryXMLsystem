@@ -1,8 +1,9 @@
 package com.orangery.model;
 
 public class GrowingTips {
+
     private int temperature;
-    private String light;
+    private boolean light;
     private int watering;
 
     public int getTemperature() {
@@ -13,11 +14,11 @@ public class GrowingTips {
         this.temperature = temperature;
     }
 
-    public String getLight() {
+    public boolean isLight() {
         return light;
     }
 
-    public void setLight(String light) {
+    public void setLight(boolean light) {
         this.light = light;
     }
 
@@ -27,14 +28,5 @@ public class GrowingTips {
 
     public void setWatering(int watering) {
         this.watering = watering;
-    }
-
-    @Override
-    public String toString() {
-        return "GrowingTips{" +
-                "temperature=" + temperature +
-                ", light='" + light + '\'' +
-                ", watering=" + watering +
-                '}';
     }
 }

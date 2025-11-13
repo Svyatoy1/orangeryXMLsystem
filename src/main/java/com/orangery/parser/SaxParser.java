@@ -3,121 +3,108 @@ package com.orangery.parser;
 import com.orangery.model.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
-
 import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SaxParser {
 
-    public List<Flower> parse(String xmlPath) {
+    public List<Flower> parse(String fileName) {
         List<Flower> flowers = new ArrayList<>();
 
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             javax.xml.parsers.SAXParser parser = factory.newSAXParser();
 
-            FlowerHandler handler = new FlowerHandler(flowers);
-            parser.parse(xmlPath, handler);
+            parser.parse(new File(fileName), new DefaultHandler() {
+
+                Flower flower;
+                VisualParameters visual;
+                GrowingTips tips;
+                String text;
+
+                @Override
+                public void startElement(String uri, String local, String qName, Attributes attrs) {
+                    switch (qName) {
+                        case "flower":
+                            flower = new Flower();
+                            flower.setId(attrs.getValue("id"));
+                            break;
+                        case "visualParameters":
+                            visual = new VisualParameters();
+                            break;
+                        case "growingTips":
+                            tips = new GrowingTips();
+                            break;
+                    }
+                }
+
+                @Override
+                public void characters(char[] ch, int start, int length) {
+                    text = new String(ch, start, length).trim();
+                }
+
+                @Override
+                public void endElement(String uri, String localName, String qName) {
+                    if (text != null && !text.isEmpty()) {
+                        switch (qName) {
+                            case "name":
+                                flower.setName(text);
+                                break;
+                            case "soil":
+                                flower.setSoil(Soil.valueOf(text));
+                                break;
+                            case "origin":
+                                flower.setOrigin(text);
+                                break;
+
+                            case "stemColor":
+                                visual.setStemColor(text);
+                                break;
+                            case "leafColor":
+                                visual.setLeafColor(text);
+                                break;
+                            case "averageSize":
+                                visual.setAverageSize(Integer.parseInt(text));
+                                break;
+
+                            case "temperature":
+                                tips.setTemperature(Integer.parseInt(text));
+                                break;
+                            case "light":
+                                tips.setLight(Boolean.parseBoolean(text));
+                                break;
+                            case "watering":
+                                tips.setWatering(Integer.parseInt(text));
+                                break;
+
+                            case "multiplying":
+                                flower.setMultiplying(Multiplying.valueOf(text));
+                                break;
+                        }
+                    }
+
+                    switch (qName) {
+                        case "visualParameters":
+                            flower.setVisualParameters(visual);
+                            break;
+                        case "growingTips":
+                            flower.setGrowingTips(tips);
+                            break;
+                        case "flower":
+                            flowers.add(flower);
+                            break;
+                    }
+
+                    text = null;
+                }
+            });
 
         } catch (Exception e) {
-            throw new RuntimeException("SAX parsing failed", e);
+            e.printStackTrace();
         }
 
         return flowers;
-    }
-
-    // ======================= HANDLER =========================
-
-    private static class FlowerHandler extends DefaultHandler {
-
-        private final List<Flower> flowers;
-        private Flower currentFlower;
-        private VisualParameters vp;
-        private GrowingTips gt;
-        private StringBuilder text = new StringBuilder();
-
-        public FlowerHandler(List<Flower> flowers) {
-            this.flowers = flowers;
-        }
-
-        @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) {
-
-            text.setLength(0);
-
-            switch (qName) {
-                case "flower":
-                    currentFlower = new Flower();
-                    currentFlower.setId(attributes.getValue("id"));
-                    break;
-
-                case "visualParameters":
-                    vp = new VisualParameters();
-                    break;
-
-                case "growingTips":
-                    gt = new GrowingTips();
-                    break;
-            }
-        }
-
-        @Override
-        public void characters(char[] ch, int start, int length) {
-            text.append(ch, start, length);
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qName) {
-
-            switch (qName) {
-
-                case "flower":
-                    currentFlower.setVisualParameters(vp);
-                    currentFlower.setGrowingTips(gt);
-                    flowers.add(currentFlower);
-                    break;
-
-                case "name":
-                    currentFlower.setName(text.toString().trim());
-                    break;
-
-                case "soil":
-                    currentFlower.setSoil(Soil.valueOf(text.toString().trim().toUpperCase()));
-                    break;
-
-                case "origin":
-                    currentFlower.setOrigin(text.toString().trim());
-                    break;
-
-                // Visual parameters
-                case "stemColor":
-                    vp.setStemColor(text.toString().trim());
-                    break;
-                case "leafColor":
-                    vp.setLeafColor(text.toString().trim());
-                    break;
-                case "averageSize":
-                    vp.setAverageSize(Integer.parseInt(text.toString().trim()));
-                    break;
-
-                // Growing tips
-                case "temperature":
-                    gt.setTemperature(Integer.parseInt(text.toString().trim()));
-                    break;
-                case "light":
-                    gt.setLight(Boolean.parseBoolean(text.toString().trim()));
-                    break;
-                case "watering":
-                    gt.setWatering(Integer.parseInt(text.toString().trim()));
-                    break;
-
-                case "multiplying":
-                    currentFlower.setMultiplying(
-                            Multiplying.valueOf(text.toString().trim().toUpperCase())
-                    );
-                    break;
-            }
-        }
     }
 }

@@ -2,7 +2,6 @@ package com.orangery.parser;
 
 import com.orangery.model.*;
 import org.w3c.dom.*;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.ArrayList;
@@ -10,64 +9,56 @@ import java.util.List;
 
 public class DomParser {
 
-    public List<Flower> parse(String filePath) {
+    public List<Flower> parse(String fileName) {
         List<Flower> flowers = new ArrayList<>();
 
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            factory.setIgnoringElementContentWhitespace(true);
+            Document doc = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder()
+                    .parse(new File(fileName));
 
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File(filePath));
-            doc.getDocumentElement().normalize();
+            NodeList nodes = doc.getElementsByTagName("flower");
 
-            NodeList nodeList = doc.getElementsByTagName("Flower");
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Element el = (Element) nodes.item(i);
 
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Element flowerElement = (Element) nodeList.item(i);
-                flowers.add(buildFlower(flowerElement));
+                Flower flower = new Flower();
+                flower.setId(el.getAttribute("id"));
+
+                flower.setName(getText(el, "name"));
+                flower.setSoil(Soil.valueOf(getText(el, "soil")));
+                flower.setOrigin(getText(el, "origin"));
+
+                // visual parameters
+                Element visualEl = (Element) el.getElementsByTagName("visualParameters").item(0);
+                VisualParameters visual = new VisualParameters();
+                visual.setStemColor(getText(visualEl, "stemColor"));
+                visual.setLeafColor(getText(visualEl, "leafColor"));
+                visual.setAverageSize(Integer.parseInt(getText(visualEl, "averageSize")));
+                flower.setVisualParameters(visual);
+
+                // growing tips
+                Element tipsEl = (Element) el.getElementsByTagName("growingTips").item(0);
+                GrowingTips tips = new GrowingTips();
+                tips.setTemperature(Integer.parseInt(getText(tipsEl, "temperature")));
+                tips.setLight(Boolean.parseBoolean(getText(tipsEl, "light")));
+                tips.setWatering(Integer.parseInt(getText(tipsEl, "watering")));
+                flower.setGrowingTips(tips);
+
+                // multiplying
+                flower.setMultiplying(Multiplying.valueOf(getText(el, "multiplying")));
+
+                flowers.add(flower);
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("DOM parsing failed", e);
+            e.printStackTrace();
         }
 
         return flowers;
     }
 
-    private Flower buildFlower(Element el) {
-        Flower flower = new Flower();
-
-        flower.setId(el.getAttribute("id"));
-        flower.setName(getText(el, "Name"));
-        flower.setOrigin(getText(el, "Origin"));
-        flower.setSoil(Soil.valueOf(getText(el, "Soil")));
-
-        // Visual parameters
-        Element visual = (Element) el.getElementsByTagName("VisualParameters").item(0);
-        VisualParameters vp = new VisualParameters(
-                getText(visual, "StemColor"),
-                getText(visual, "LeafColor"),
-                Integer.parseInt(getText(visual, "AverageSize"))
-        );
-        flower.setVisualParameters(vp);
-
-        // Growing tips
-        Element tips = (Element) el.getElementsByTagName("GrowingTips").item(0);
-        GrowingTips gt = new GrowingTips(
-                Integer.parseInt(getText(tips, "Temperature")),
-                getText(tips, "Light"),
-                Integer.parseInt(getText(tips, "Watering"))
-        );
-        flower.setGrowingTips(gt);
-
-        flower.setMultiplying(Multiplying.valueOf(getText(el, "Multiplying")));
-
-        return flower;
-    }
-
     private String getText(Element parent, String tag) {
-        return parent.getElementsByTagName(tag).item(0).getTextContent();
+        return parent.getElementsByTagName(tag).item(0).getTextContent().trim();
     }
 }
