@@ -1,5 +1,6 @@
 package com.orangery.validator;
 
+import com.orangery.util.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,21 +15,24 @@ public class XmlValidator {
 
     private static final Logger logger = LoggerFactory.getLogger(XmlValidator.class);
 
-    public boolean validate(String xmlPath, String xsdPath) {
+    public boolean validate(String xmlName, String xsdName) {
         try {
-            logger.info("Starting XML validation: xml={}, xsd={}", xmlPath, xsdPath);
+            File xml = ResourceUtil.getResourceFile(xmlName);
+            File xsd = ResourceUtil.getResourceFile(xsdName);
 
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new File(xsdPath));
+            SchemaFactory factory =
+                    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+            Schema schema = factory.newSchema(xsd);
             Validator validator = schema.newValidator();
 
-            validator.validate(new StreamSource(new File(xmlPath)));
+            validator.validate(new StreamSource(xml));
 
-            logger.info("XML validation SUCCESS: {}", xmlPath);
+            logger.info("XML validation SUCCESS: {}", xmlName);
             return true;
 
         } catch (Exception e) {
-            logger.error("XML validation FAILED: {} → {}", xmlPath, e.getMessage());
+            logger.error("XML validation FAILED: {} → {}", xmlName, e.getMessage());
             return false;
         }
     }

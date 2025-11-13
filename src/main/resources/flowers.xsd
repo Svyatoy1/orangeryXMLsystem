@@ -79,14 +79,7 @@
                 </xs:simpleType>
             </xs:element>
 
-            <xs:element name="light">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="light-loving"/>
-                        <xs:enumeration value="shade-loving"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:element>
+            <xs:element name="light" type="xs:boolean"/>
 
             <xs:element name="watering">
                 <xs:simpleType>

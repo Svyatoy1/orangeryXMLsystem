@@ -68,7 +68,7 @@ public class Main {
 
     private static void sortMenu() {
         if (flowers.isEmpty()) {
-            System.out.println("⚠ No flowers loaded.");
+            System.out.println("No flowers loaded.");
             return;
         }
 
@@ -94,21 +94,23 @@ public class Main {
 
     private static void validateXml() {
         XmlValidator validator = new XmlValidator();
-        boolean ok = validator.validate("flowers.xml", "flowers.xsd");
 
-        System.out.println(ok ? "XML is valid!" : "XML is INVALID!");
+        boolean valid = validator.validate("flowers.xml", "flowers.xsd");
+
+        if (valid) System.out.println("XML is valid!");
+        else System.out.println("XML is invalid!");
     }
 
     private static void transformXml() {
         XmlTransformer transformer = new XmlTransformer();
         transformer.transform("flowers.xml", "transform.xml", "output.html");
 
-        System.out.println("Transformation complete → output.html");
+        System.out.println("Transformation complete -> output.html");
     }
 
     private static void showFlowers() {
         if (flowers.isEmpty()) {
-            System.out.println("⚠ No flowers loaded.");
+            System.out.println("No flowers loaded.");
             return;
         }
 
