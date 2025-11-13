@@ -1,8 +1,11 @@
 package com.orangery.parser;
 
 import com.orangery.model.*;
-import org.xml.sax.Attributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.util.ArrayList;
@@ -10,29 +13,36 @@ import java.util.List;
 
 public class SaxParser {
 
-    public List<Flower> parse(String fileName) {
+    private static final Logger logger = LoggerFactory.getLogger(SaxParser.class);
+
+    public List<Flower> parse(String filePath) {
+        logger.info("SAX parsing started: {}", filePath);
+
         List<Flower> flowers = new ArrayList<>();
 
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
-            javax.xml.parsers.SAXParser parser = factory.newSAXParser();
+            SAXParser parser = factory.newSAXParser();
 
-            parser.parse(new File(fileName), new DefaultHandler() {
+            DefaultHandler handler = new DefaultHandler() {
 
                 Flower flower;
-                VisualParameters visual;
+                VisualParameters vp;
                 GrowingTips tips;
-                String text;
+                StringBuilder data = new StringBuilder();
 
                 @Override
-                public void startElement(String uri, String local, String qName, Attributes attrs) {
+                public void startElement(String uri, String localName, String qName, Attributes attributes) {
+                    data.setLength(0);
+                    logger.debug("Start element: {}", qName);
+
                     switch (qName) {
                         case "flower":
                             flower = new Flower();
-                            flower.setId(attrs.getValue("id"));
+                            flower.setId(attributes.getValue("id"));
                             break;
                         case "visualParameters":
-                            visual = new VisualParameters();
+                            vp = new VisualParameters();
                             break;
                         case "growingTips":
                             tips = new GrowingTips();
@@ -42,67 +52,41 @@ public class SaxParser {
 
                 @Override
                 public void characters(char[] ch, int start, int length) {
-                    text = new String(ch, start, length).trim();
+                    data.append(ch, start, length);
                 }
 
                 @Override
                 public void endElement(String uri, String localName, String qName) {
-                    if (text != null && !text.isEmpty()) {
-                        switch (qName) {
-                            case "name":
-                                flower.setName(text);
-                                break;
-                            case "soil":
-                                flower.setSoil(Soil.valueOf(text));
-                                break;
-                            case "origin":
-                                flower.setOrigin(text);
-                                break;
-
-                            case "stemColor":
-                                visual.setStemColor(text);
-                                break;
-                            case "leafColor":
-                                visual.setLeafColor(text);
-                                break;
-                            case "averageSize":
-                                visual.setAverageSize(Integer.parseInt(text));
-                                break;
-
-                            case "temperature":
-                                tips.setTemperature(Integer.parseInt(text));
-                                break;
-                            case "light":
-                                tips.setLight(Boolean.parseBoolean(text));
-                                break;
-                            case "watering":
-                                tips.setWatering(Integer.parseInt(text));
-                                break;
-
-                            case "multiplying":
-                                flower.setMultiplying(Multiplying.valueOf(text));
-                                break;
-                        }
-                    }
+                    logger.debug("End element: {}", qName);
 
                     switch (qName) {
-                        case "visualParameters":
-                            flower.setVisualParameters(visual);
-                            break;
-                        case "growingTips":
-                            flower.setGrowingTips(tips);
-                            break;
-                        case "flower":
-                            flowers.add(flower);
-                            break;
+                        case "name" -> flower.setName(data.toString());
+                        case "soil" -> flower.setSoil(data.toString());
+                        case "origin" -> flower.setOrigin(data.toString());
+
+                        case "stemColor" -> vp.setStemColor(data.toString());
+                        case "leafColor" -> vp.setLeafColor(data.toString());
+                        case "averageSize" -> vp.setAverageSize(Integer.parseInt(data.toString()));
+
+                        case "temperature" -> tips.setTemperature(Integer.parseInt(data.toString()));
+                        case "light" -> tips.setLight(Boolean.parseBoolean(data.toString()));
+                        case "watering" -> tips.setWatering(Integer.parseInt(data.toString()));
+
+                        case "multiplying" -> flower.setMultiplying(data.toString());
+
+                        case "visualParameters" -> flower.setVisualParameters(vp);
+                        case "growingTips" -> flower.setGrowingTips(tips);
+
+                        case "flower" -> flowers.add(flower);
                     }
-
-                    text = null;
                 }
-            });
+            };
 
+            parser.parse(new File(filePath), handler);
+
+            logger.info("SAX parsing finished successfully.");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("SAX parsing error: {}", e.getMessage());
         }
 
         return flowers;

@@ -1,110 +1,98 @@
 package com.orangery.parser;
 
 import com.orangery.model.*;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import javax.xml.stream.*;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StaxParser {
 
-    public List<Flower> parse(String fileName) {
+    private static final Logger logger = LoggerFactory.getLogger(StaxParser.class);
+
+    public List<Flower> parse(String filePath) {
+        logger.info("StAX parsing started: {}", filePath);
+
         List<Flower> flowers = new ArrayList<>();
 
-        try {
+        try (FileInputStream input = new FileInputStream(filePath)) {
+
             XMLInputFactory factory = XMLInputFactory.newInstance();
-            XMLStreamReader reader =
-                    factory.createXMLStreamReader(new FileInputStream(fileName));
+            XMLStreamReader reader = factory.createXMLStreamReader(input);
 
             Flower flower = null;
-            VisualParameters visual = null;
+            VisualParameters vp = null;
             GrowingTips tips = null;
-            String text = null;
+            String currentTag = null;
 
             while (reader.hasNext()) {
-                switch (reader.next()) {
+                int event = reader.next();
+
+                switch (event) {
 
                     case XMLStreamConstants.START_ELEMENT:
-                        switch (reader.getLocalName()) {
-                            case "flower":
-                                flower = new Flower();
-                                flower.setId(reader.getAttributeValue(null, "id"));
-                                break;
-                            case "visualParameters":
-                                visual = new VisualParameters();
-                                break;
-                            case "growingTips":
-                                tips = new GrowingTips();
-                                break;
+                        currentTag = reader.getLocalName();
+                        logger.debug("Start element: {}", currentTag);
+
+                        if (currentTag.equals("flower")) {
+                            flower = new Flower();
+                            flower.setId(reader.getAttributeValue(null, "id"));
+                        }
+                        if (currentTag.equals("visualParameters")) {
+                            vp = new VisualParameters();
+                        }
+                        if (currentTag.equals("growingTips")) {
+                            tips = new GrowingTips();
                         }
                         break;
 
                     case XMLStreamConstants.CHARACTERS:
-                        text = reader.getText().trim();
+                        if (reader.isWhiteSpace() || currentTag == null) break;
+
+                        String text = reader.getText().trim();
+                        if (text.isEmpty()) break;
+
+                        switch (currentTag) {
+                            case "name" -> flower.setName(text);
+                            case "soil" -> flower.setSoil(text);
+                            case "origin" -> flower.setOrigin(text);
+
+                            case "stemColor" -> vp.setStemColor(text);
+                            case "leafColor" -> vp.setLeafColor(text);
+                            case "averageSize" -> vp.setAverageSize(Integer.parseInt(text));
+
+                            case "temperature" -> tips.setTemperature(Integer.parseInt(text));
+                            case "light" -> tips.setLight(Boolean.parseBoolean(text));
+                            case "watering" -> tips.setWatering(Integer.parseInt(text));
+
+                            case "multiplying" -> flower.setMultiplying(text);
+                        }
                         break;
 
                     case XMLStreamConstants.END_ELEMENT:
-                        String name = reader.getLocalName();
+                        String tag = reader.getLocalName();
+                        logger.debug("End element: {}", tag);
 
-                        if (text != null && !text.isEmpty()) {
-                            switch (name) {
-                                case "name":
-                                    flower.setName(text);
-                                    break;
-                                case "soil":
-                                    flower.setSoil(Soil.valueOf(text));
-                                    break;
-                                case "origin":
-                                    flower.setOrigin(text);
-                                    break;
+                        if (tag.equals("visualParameters"))
+                            flower.setVisualParameters(vp);
 
-                                case "stemColor":
-                                    visual.setStemColor(text);
-                                    break;
-                                case "leafColor":
-                                    visual.setLeafColor(text);
-                                    break;
-                                case "averageSize":
-                                    visual.setAverageSize(Integer.parseInt(text));
-                                    break;
+                        if (tag.equals("growingTips"))
+                            flower.setGrowingTips(tips);
 
-                                case "temperature":
-                                    tips.setTemperature(Integer.parseInt(text));
-                                    break;
-                                case "light":
-                                    tips.setLight(Boolean.parseBoolean(text));
-                                    break;
-                                case "watering":
-                                    tips.setWatering(Integer.parseInt(text));
-                                    break;
+                        if (tag.equals("flower"))
+                            flowers.add(flower);
 
-                                case "multiplying":
-                                    flower.setMultiplying(Multiplying.valueOf(text));
-                                    break;
-                            }
-                        }
-
-                        switch (name) {
-                            case "visualParameters":
-                                flower.setVisualParameters(visual);
-                                break;
-                            case "growingTips":
-                                flower.setGrowingTips(tips);
-                                break;
-                            case "flower":
-                                flowers.add(flower);
-                                break;
-                        }
-
-                        text = null;
+                        currentTag = null;
                         break;
                 }
             }
 
+            logger.info("StAX parsing finished successfully.");
+
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("StAX parsing error: {}", e.getMessage());
         }
 
         return flowers;

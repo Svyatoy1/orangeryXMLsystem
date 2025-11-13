@@ -1,36 +1,35 @@
 package com.orangery.transform;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 
 public class XmlTransformer {
 
-    /**
-     * XSLT-transformation
-     * @param xmlPath path to input XML
-     * @param xslPath path to XSL-файлу
-     * @param outputPath path to output XML
-     * @return true — if transformation is successful
-     */
+    private static final Logger logger = LoggerFactory.getLogger(XmlTransformer.class);
+
     public boolean transform(String xmlPath, String xslPath, String outputPath) {
+        logger.info("Starting XSLT transform: XML='{}', XSL='{}'", xmlPath, xslPath);
+
         try {
             TransformerFactory factory = TransformerFactory.newInstance();
 
-            StreamSource xsl = new StreamSource(new File(xslPath));
-            StreamSource xml = new StreamSource(new File(xmlPath));
+            Transformer transformer = factory.newTransformer(new StreamSource(new File(xslPath)));
 
-            Transformer transformer = factory.newTransformer(xsl);
+            transformer.transform(
+                    new StreamSource(new File(xmlPath)),
+                    new StreamResult(new File(outputPath))
+            );
 
-            StreamResult result = new StreamResult(new File(outputPath));
-
-            transformer.transform(xml, result);
-
+            logger.info("Transformation completed. Output file: {}", outputPath);
             return true;
+
         } catch (Exception e) {
-            System.out.println("XSLT error: " + e.getMessage());
+            logger.error("XSLT error: {}", e.getMessage());
             return false;
         }
     }
