@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <!-- Root element -->
+    <xs:element name="flowers">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="flower" type="flowerType" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Flower complex type -->
+    <xs:complexType name="flowerType">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+
+            <xs:element name="soil" type="soilType"/>
+
+            <xs:element name="origin" type="xs:string"/>
+
+            <xs:element name="visualParameters" type="visualParametersType"/>
+
+            <xs:element name="growingTips" type="growingTipsType"/>
+
+            <xs:element name="multiplying" type="multiplyingType"/>
+        </xs:sequence>
+
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>
+
+    <!-- Soil enumeration -->
+    <xs:simpleType name="soilType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="podzolic"/>
+            <xs:enumeration value="ground"/>
+            <xs:enumeration value="sod-podzolic"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Multiplying enumeration -->
+    <xs:simpleType name="multiplyingType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="leaves"/>
+            <xs:enumeration value="cuttings"/>
+            <xs:enumeration value="seeds"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Visual parameters -->
+    <xs:complexType name="visualParametersType">
+        <xs:sequence>
+            <xs:element name="stemColor" type="xs:string"/>
+            <xs:element name="leafColor" type="xs:string"/>
+
+            <xs:element name="averageSize">
+                <xs:simpleType>
+                    <xs:restriction base="xs:integer">
+                        <xs:minInclusive value="1"/>
+                        <xs:maxInclusive value="200"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Growing tips -->
+    <xs:complexType name="growingTipsType">
+        <xs:sequence>
+
+            <xs:element name="temperature">
+                <xs:simpleType>
+                    <xs:restriction base="xs:integer">
+                        <xs:minInclusive value="5"/>
+                        <xs:maxInclusive value="40"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+
+            <xs:element name="light">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="light-loving"/>
+                        <xs:enumeration value="shade-loving"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+
+            <xs:element name="watering">
+                <xs:simpleType>
+                    <xs:restriction base="xs:integer">
+                        <xs:minInclusive value="10"/>
+                        <xs:maxInclusive value="2000"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

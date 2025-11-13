@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flowers>
+    <flower id="f1">
+        <name>Rose</name>
+        <soil>ground</soil>
+        <origin>Netherlands</origin>
+
+        <visualParameters>
+            <stemColor>green</stemColor>
+            <leafColor>dark-green</leafColor>
+            <averageSize>45</averageSize>
+        </visualParameters>
+
+        <growingTips>
+            <temperature>18</temperature>
+            <light>light-loving</light>
+            <watering>300</watering>
+        </growingTips>
+
+        <multiplying>cuttings</multiplying>
+    </flower>
+
+    <flower id="f2">
+        <name>Orchid</name>
+        <soil>sod-podzolic</soil>
+        <origin>Thailand</origin>
+
+        <visualParameters>
+            <stemColor>light-green</stemColor>
+            <leafColor>green</leafColor>
+            <averageSize>25</averageSize>
+        </visualParameters>
+
+        <growingTips>
+            <temperature>22</temperature>
+            <light>shade-loving</light>
+            <watering>150</watering>
+        </growingTips>
+
+        <multiplying>seeds</multiplying>
+    </flower>
+</flowers>
