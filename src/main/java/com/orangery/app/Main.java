@@ -7,6 +7,11 @@ import com.orangery.parser.StaxParser;
 import com.orangery.transform.XmlTransformer;
 import com.orangery.validator.XmlValidator;
 import com.orangery.util.*;
+import java.io.StringWriter;
+
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.awt.Desktop;
 
 import java.util.*;
 
@@ -102,10 +107,35 @@ public class Main {
     }
 
     private static void transformXml() {
-        XmlTransformer transformer = new XmlTransformer();
-        transformer.transform("flowers.xml", "transform.xml", "output.html");
+        if (flowers.isEmpty()) {
+            System.out.println("No flowers loaded.");
+            return;
+        }
 
-        System.out.println("Transformation complete -> output.html");
+        System.out.println("Performing XSLT transformation...");
+
+        XmlTransformer transformer = new XmlTransformer();
+
+        // Створюємо XML зі списку квітів
+        String xml = toXmlString(flowers);
+
+        // Виконуємо трансформацію
+        String html = transformer.transformStringXml(xml, "transform.xml");
+
+        // Записуємо у resources/output/output.html
+        try {
+            Path out = Path.of("src/main/resources/output/output.html");
+            Files.createDirectories(out.getParent());
+            Files.writeString(out, html);
+
+            System.out.println("HTML saved: " + out.toAbsolutePath());
+
+            // Автоматично відкриваємо у браузері
+            java.awt.Desktop.getDesktop().browse(out.toUri());
+
+        } catch (Exception e) {
+            System.out.println("Error while saving HTML: " + e.getMessage());
+        }
     }
 
     private static void showFlowers() {
@@ -116,5 +146,36 @@ public class Main {
 
         System.out.println("=== Flowers ===");
         flowers.forEach(System.out::println);
+    }
+
+    public static String toXmlString(List<Flower> flowers) {
+        StringWriter sw = new StringWriter();
+        sw.write("<flowers>\n");
+
+        for (Flower f : flowers) {
+            sw.write("  <flower id=\"" + f.getId() + "\">\n");
+            sw.write("    <name>" + f.getName() + "</name>\n");
+            sw.write("    <soil>" + f.getSoil().getValue() + "</soil>\n");
+            sw.write("    <origin>" + f.getOrigin() + "</origin>\n");
+
+            sw.write("    <visualParameters>\n");
+            sw.write("      <stemColor>" + f.getVisualParameters().getStemColor() + "</stemColor>\n");
+            sw.write("      <leafColor>" + f.getVisualParameters().getLeafColor() + "</leafColor>\n");
+            sw.write("      <averageSize>" + f.getVisualParameters().getAverageSize() + "</averageSize>\n");
+            sw.write("    </visualParameters>\n");
+
+            sw.write("    <growingTips>\n");
+            sw.write("      <temperature>" + f.getGrowingTips().getTemperature() + "</temperature>\n");
+            sw.write("      <light>" + f.getGrowingTips().isLight() + "</light>\n");
+            sw.write("      <watering>" + f.getGrowingTips().getWatering() + "</watering>\n");
+            sw.write("    </growingTips>\n");
+
+            sw.write("    <multiplying>" + f.getMultiplying().getValue() + "</multiplying>\n");
+
+            sw.write("  </flower>\n");
+        }
+
+        sw.write("</flowers>");
+        return sw.toString();
     }
 }

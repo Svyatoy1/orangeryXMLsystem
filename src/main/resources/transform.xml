@@ -9,10 +9,8 @@
 
     <xsl:template match="/">
         <groupedFlowers>
-            <!-- беремо унікальні значення soil -->
             <xsl:for-each select="flowers/flower[generate-id() = generate-id(key('flowersBySoil', soil)[1])]">
                 <soilGroup type="{soil}">
-                    <!-- вставляємо всі flower з таким soil -->
                     <xsl:for-each select="key('flowersBySoil', soil)">
                         <xsl:copy-of select="."/>
                     </xsl:for-each>
